@@ -21,7 +21,11 @@ using namespace glm;
 class SDLGL {
 
 public:
-	SDLGL();
+	SDLGL(int _w = 800, int _h = 600, Uint32 _f = SDL_INIT_VIDEO | SDL_INIT_TIMER);
+	SDLGL(const SDLGL&) = delete;
+	const SDLGL& operator=(const SDLGL&) = delete;
+	SDLGL(SDLGL&&);
+	const SDLGL& operator=(const SDLGL&&);
 	~SDLGL();
 
 	//call this before Init
@@ -35,8 +39,10 @@ public:
 
 	//two way to create program
 	static GLuint CreateProgram_sdl_s(const char*, const char*);
+	static GLuint CreateProgram_sdl_s(const char*, const char*, const char*);
 	void CreateProgram_sdl(const char*, const char*);
 	static GLuint LoadShader_sdl_s(const char* _vpath, const char* _fpath);
+	static GLuint LoadShader_sdl_s(const char* _vpath,const char* _gpath, const char* _fpath);
 	void LoadShader_sdl(const char* _vpath, const char* _fpath);
 
 protected:
@@ -47,6 +53,9 @@ protected:
 	int sdl_height, sdl_width;
 	char* sdl_title;
 	GLuint *sdl_program;
+
+	//map mouse to trackball point
+	vec3 get_trackball_pos_sdl(int, int);
 
 	//main func of sdlevent handler
 	virtual int Handle_Event_sdl(SDL_Event *);

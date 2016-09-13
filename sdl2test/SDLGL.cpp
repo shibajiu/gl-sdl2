@@ -2,9 +2,21 @@
 #include "SDLGL.h"
 
 
-SDLGL::SDLGL() {
+SDLGL::SDLGL(int _w, int _h, Uint32 _f) :
+	sdl_width(_w),
+	sdl_height(_h),
+	sdl_init_flags(_f),
+	sdl_title("SDLGL") {
+	Init_sdl();
 }
 
+
+SDLGL::SDLGL(SDLGL &&) {
+}
+
+const SDLGL & SDLGL::operator=(const SDLGL &&) {
+	return *this;
+}
 
 SDLGL::~SDLGL() {
 }
@@ -24,7 +36,7 @@ int SDLGL::Init_sdl() {
 			SDL_GetError());
 		return -1;
 	}
-	sdl_window = SDL_CreateWindow("s", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sdl_height, sdl_width, SDL_WINDOW_OPENGL);
+	sdl_window = SDL_CreateWindow(sdl_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sdl_height, sdl_width, SDL_WINDOW_OPENGL);
 	if (!sdl_window) {
 		fprintf(stderr, "Create Window failed: %s\n",
 			SDL_GetError());
@@ -70,16 +82,53 @@ GLuint SDLGL::CreateProgram_sdl_s(const char *_v, const char *_f) {
 	return GLuint(_program);
 }
 
+GLuint SDLGL::CreateProgram_sdl_s(const char *_v, const char *_g, const char *_f) {
+	GLuint _vshader, _gshader, _fshader, _program;
+	_vshader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(_vshader, 1, &_v, NULL);
+	glCompileShader(_vshader);
+	PrintShaderLog_sdl(_vshader);
+
+	_gshader = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(_gshader, 1, &_g, NULL);
+	glCompileShader(_gshader);
+	PrintShaderLog_sdl(_gshader);
+
+	_fshader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(_fshader, 1, &_f, NULL);
+	glCompileShader(_fshader);
+	PrintShaderLog_sdl(_fshader);
+
+	_program = glCreateProgram();
+	glAttachShader(_program, _vshader);
+	glAttachShader(_program, _gshader);
+	glAttachShader(_program, _fshader);
+	glLinkProgram(_program);
+	PrintProgramLog_sdl(_program);
+	glDetachShader(_program, _vshader);
+	glDetachShader(_program, _gshader);
+	glDetachShader(_program, _fshader);
+	return GLuint(_program);
+}
+
 void SDLGL::CreateProgram_sdl(const char *_v, const char *_f) {
 	CreateProgram_sdl_s(_v, _f);
 }
 
-GLuint SDLGL::LoadShader_sdl_s(const char * _vpath, const char * _fpath) {
-	string vshader_f_source, fshader_f_source, temp;
+GLuint SDLGL::LoadShader_sdl_s(const char * _vpath, const char * _gpath, const char * _fpath) {
+	string _vshader_f_source, _gshader_f_source, _fshader_f_source, temp;
 	auto shaderfstream = ifstream(_vpath, ios::in);
 	if (shaderfstream.is_open()) {
 		while (getline(shaderfstream, temp)) {
-			vshader_f_source += temp + "\n";
+			_vshader_f_source += temp + "\n";
+		}
+	}
+	shaderfstream.close();
+
+	shaderfstream = ifstream(_gpath);
+	if (shaderfstream.is_open()) {
+		while (getline(shaderfstream, temp)) {
+			_gshader_f_source += temp + "\n";
 		}
 	}
 	shaderfstream.close();
@@ -87,11 +136,32 @@ GLuint SDLGL::LoadShader_sdl_s(const char * _vpath, const char * _fpath) {
 	shaderfstream = ifstream(_fpath);
 	if (shaderfstream.is_open()) {
 		while (getline(shaderfstream, temp)) {
-			fshader_f_source += temp + "\n";
+			_fshader_f_source += temp + "\n";
 		}
 	}
 	shaderfstream.close();
-	return CreateProgram_sdl_s(vshader_f_source.c_str(), fshader_f_source.c_str());
+
+	return CreateProgram_sdl_s(_vshader_f_source.c_str(), _gshader_f_source.c_str(), _fshader_f_source.c_str());
+}
+
+GLuint SDLGL::LoadShader_sdl_s(const char * _vpath, const char * _fpath) {
+	string _vshader_f_source, _fshader_f_source, temp;
+	auto shaderfstream = ifstream(_vpath, ios::in);
+	if (shaderfstream.is_open()) {
+		while (getline(shaderfstream, temp)) {
+			_vshader_f_source += temp + "\n";
+		}
+	}
+	shaderfstream.close();
+
+	shaderfstream = ifstream(_fpath);
+	if (shaderfstream.is_open()) {
+		while (getline(shaderfstream, temp)) {
+			_fshader_f_source += temp + "\n";
+		}
+	}
+	shaderfstream.close();
+	return CreateProgram_sdl_s(_vshader_f_source.c_str(), _fshader_f_source.c_str());
 }
 
 void SDLGL::LoadShader_sdl(const char * _vpath, const char * _fpath) {
@@ -109,7 +179,12 @@ int SDLGL::Handle_Event_sdl(SDL_Event * _e) {
 	}
 }
 
-int SDLGL::MouseDownHandler_sdl(SDL_MouseButtonEvent *) {
+int SDLGL::MouseDownHandler_sdl(SDL_MouseButtonEvent *_e) {
+	if (_e->button == SDL_BUTTON_LEFT) {
+		if (_e->type == SDL_MOUSEBUTTONDOWN) {
+
+		}
+	}
 	return 0;
 }
 
