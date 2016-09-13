@@ -1,0 +1,11 @@
+Release/
+Debug/
+ipch
+sdl2test/Debug/
+sdl2test/Release/
+*.sdf
+*.suo
+*.dll
+*.user
+*.db
+ReadMe.txt
