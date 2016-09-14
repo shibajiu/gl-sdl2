@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <GL/glew.h>
 #include <gtx/transform.hpp>
+#include <gtx/quaternion.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -15,6 +16,7 @@
 using namespace std;
 using namespace glm;
 
+#define GLM_FORCE_RADIANS
 #define var auto
 #define UFIND_INDEX(x,y) find(x.begin(),x.end(),y)==x.end()
 
@@ -53,15 +55,21 @@ protected:
 	int sdl_height, sdl_width;
 	char* sdl_title;
 	GLuint *sdl_program;
+	vec3 sdl_trkb_center = vec3(0);
+	//square of the trackball's radius
+	GLfloat sdl_trkb_radius_sqr;
+	vec3 sdl_trkb_start = vec3(0), sdl_trkb_destination = vec3(0);
 
 	//map mouse to trackball point
-	vec3 get_trackball_pos_sdl(int, int);
+	vec3 get_trackball_pos_sdl(float, float);
+
+	quat get_trackball_quat_sdl(vec3 _s, vec3 _d);
 
 	//main func of sdlevent handler
 	virtual int Handle_Event_sdl(SDL_Event *);
 
 	//
-	virtual int MouseDownHandler_sdl(SDL_MouseButtonEvent *);
+	virtual int MouseClickHandler_sdl(SDL_MouseButtonEvent *);
 
 	//
 	virtual int MouseMoveHandler_sdl(SDL_MouseMotionEvent *);

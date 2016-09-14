@@ -6,7 +6,8 @@ SDLGL::SDLGL(int _w, int _h, Uint32 _f) :
 	sdl_width(_w),
 	sdl_height(_h),
 	sdl_init_flags(_f),
-	sdl_title("SDLGL") {
+	sdl_title("SDLGL"),
+	sdl_trkb_radius_sqr(0.25*pow(glm::min(_w, _h), 2)) {
 	Init_sdl();
 }
 
@@ -36,7 +37,7 @@ int SDLGL::Init_sdl() {
 			SDL_GetError());
 		return -1;
 	}
-	sdl_window = SDL_CreateWindow(sdl_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sdl_height, sdl_width, SDL_WINDOW_OPENGL);
+	sdl_window = SDL_CreateWindow(sdl_title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sdl_width, sdl_height, SDL_WINDOW_OPENGL);
 	if (!sdl_window) {
 		fprintf(stderr, "Create Window failed: %s\n",
 			SDL_GetError());
@@ -168,6 +169,40 @@ void SDLGL::LoadShader_sdl(const char * _vpath, const char * _fpath) {
 	
 }
 
+vec3 SDLGL::get_trackball_pos_sdl(float _x, float _y) {
+	vec3 _t(_x - sdl_width*0.5, _y - sdl_height*0.5, 0);
+	_t -= sdl_trkb_center;
+	var _te = _t.x*_t.x + _t.y*_t.y;
+	var _tem = sdl_trkb_radius_sqr*0.5;
+	if (_te <= _tem) {
+		return vec3(_t.x, _t.y, sqrtf(sdl_trkb_radius_sqr - _te));
+	}
+	else if (_te > _tem) {
+		return vec3(_t.x, _t.y, _tem / sqrtf(_te));
+	}
+	return vec3(0);
+}
+
+quat SDLGL::get_trackball_quat_sdl(vec3 _s, vec3 _d) {
+	_s = normalize(_s);
+	_d = normalize(_d);
+	var _cos = dot(_s, _d);
+	//_s=-_d
+	if (_cos < -1 + 0.001) {
+		var _t = vec3(0, 0, 1);
+		var _te = cross(_s, _t);
+		if (length2(_te) < 0.01) {
+			_te = cross(_s, vec3(0, 1, 0));
+		}
+		_te = normalize(_te);
+		return angleAxis(radians(180.f), _te);
+	}
+	var _tem = normalize(cross(_s, _d));
+	//no more than pi
+	var _temp = acosf(_cos);
+	return glm::angleAxis(_temp, _tem);
+}
+
 int SDLGL::Handle_Event_sdl(SDL_Event * _e) {
 	switch (_e->type) {
 	case SDL_QUIT:
@@ -179,10 +214,13 @@ int SDLGL::Handle_Event_sdl(SDL_Event * _e) {
 	}
 }
 
-int SDLGL::MouseDownHandler_sdl(SDL_MouseButtonEvent *_e) {
+int SDLGL::MouseClickHandler_sdl(SDL_MouseButtonEvent *_e) {
 	if (_e->button == SDL_BUTTON_LEFT) {
 		if (_e->type == SDL_MOUSEBUTTONDOWN) {
-
+			sdl_trkb_start = get_trackball_pos_sdl(_e->x, _e->y);
+		}
+		else if (_e->type = SDL_MOUSEBUTTONUP) {
+			sdl_trkb_start = vec3(0);
 		}
 	}
 	return 0;
