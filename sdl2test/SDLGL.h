@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <gtx/transform.hpp>
 #include <gtx/quaternion.hpp>
+#include <gtc/type_ptr.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -46,27 +47,35 @@ public:
 	static GLuint LoadShader_sdl_s(const char* _vpath, const char* _fpath);
 	static GLuint LoadShader_sdl_s(const char* _vpath,const char* _gpath, const char* _fpath);
 	void LoadShader_sdl(const char* _vpath, const char* _fpath);
+	mat4 GetRotateMat();
+	//handle sdl event
+	virtual int ProcessEvent_sdl();
+	//sample render test,generator must be called before game loop
+	virtual int RenderTestGenerator_sdl();
+	virtual int RenderTest_sdl(GLuint);
+
+	SDL_Window* GetWindow_sdl() { return sdl_window; }
 
 protected:
 
-	SDL_Window *sdl_window;
 	SDL_GLContext sdl_context;
 	Uint32 sdl_init_flags;
 	int sdl_height, sdl_width;
+	SDL_Event sdl_event;
+	bool sdl_ispressed;
+	SDL_Window *sdl_window;
 	char* sdl_title;
 	GLuint *sdl_program;
 	vec3 sdl_trkb_center = vec3(0);
 	//square of the trackball's radius
 	GLfloat sdl_trkb_radius_sqr;
 	vec3 sdl_trkb_start = vec3(0), sdl_trkb_destination = vec3(0);
+	mat4 sdl_trkb_mat = mat4(1),sdl_trkb_matnow=mat4(1);
 
 	//map mouse to trackball point
 	vec3 get_trackball_pos_sdl(float, float);
 
 	quat get_trackball_quat_sdl(vec3 _s, vec3 _d);
-
-	//main func of sdlevent handler
-	virtual int Handle_Event_sdl(SDL_Event *);
 
 	//
 	virtual int MouseClickHandler_sdl(SDL_MouseButtonEvent *);

@@ -7,6 +7,7 @@ SDLGL::SDLGL(int _w, int _h, Uint32 _f) :
 	sdl_height(_h),
 	sdl_init_flags(_f),
 	sdl_title("SDLGL"),
+	sdl_ispressed(false),
 	sdl_trkb_radius_sqr(0.25*pow(glm::min(_w, _h), 2)) {
 	Init_sdl();
 }
@@ -20,6 +21,9 @@ const SDLGL & SDLGL::operator=(const SDLGL &&) {
 }
 
 SDLGL::~SDLGL() {
+	//delete sdl_window;
+	//delete sdl_title;
+	//delete sdl_program;
 }
 
 void SDLGL::SetWindowSize_sdl(int _h, int _w) {
@@ -59,6 +63,7 @@ int SDLGL::Init_sdl() {
 			glewGetErrorString(err));
 		return -1;
 	}
+	return 0;
 }
 
 GLuint SDLGL::CreateProgram_sdl_s(const char *_v, const char *_f) {
@@ -169,16 +174,87 @@ void SDLGL::LoadShader_sdl(const char * _vpath, const char * _fpath) {
 	
 }
 
+mat4 SDLGL::GetRotateMat() {
+	if (sdl_ispressed)
+		return sdl_trkb_mat*sdl_trkb_matnow;
+	else
+		return sdl_trkb_matnow;
+}
+
+int SDLGL::ProcessEvent_sdl() {
+	while (SDL_PollEvent(&sdl_event)) {
+		switch (sdl_event.type) {
+		case SDL_MOUSEBUTTONDOWN:
+			//cout << "click" << endl;
+			MouseClickHandler_sdl(&sdl_event.button);
+			sdl_ispressed = true;
+			break;
+		case SDL_MOUSEBUTTONUP:
+				//cout << "r" << endl;
+			MouseClickHandler_sdl(&sdl_event.button);
+			sdl_ispressed = false;
+			break;
+		case SDL_MOUSEMOTION:
+			//cout << sdl_event.motion.x << "\t" << sdl_event.motion.y+ << endl;
+			if (sdl_ispressed)
+				MouseMoveHandler_sdl(&sdl_event.motion);
+			break;
+		case SDL_QUIT:
+			return 0;
+			break;
+		default:
+			break;
+		}
+	}
+	return 1;
+}
+
+int SDLGL::RenderTestGenerator_sdl() {
+	GLfloat _t[] = { 0.0, 0.5,0.0, 1.0,0.0,0.3,
+					-0.5,-0.5,0.5,0.3,0.7,0.1,
+					0.5,-0.5,0.5, 0.4,0.1,0.9,
+					0.0,-0.5,-0.5,0.0,0.1,0.3};
+	GLushort _ti[] = {	0,1,2,
+						0,3,1,
+						0,2,3,
+						1,3,2};
+	GLuint _vao, _vbo, _ebo;
+	glGenVertexArrays(1, &_vao);
+	glGenBuffers(1, &_vbo);
+	glGenBuffers(1, &_ebo);
+	glBindVertexArray(_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(_t), _t, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, false, 6*sizeof(GLfloat), nullptr);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	glEnableVertexArrayAttrib(_vao, 1);//ogl 4.5
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_ti), _ti, GL_STATIC_DRAW);
+	glBindVertexArray(0);
+	return _vao;
+}
+
+int SDLGL::RenderTest_sdl(GLuint _v) {
+	glBindVertexArray(_v);
+	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_SHORT, 0);
+	glBindVertexArray(0);
+	return 0;
+}
+
 vec3 SDLGL::get_trackball_pos_sdl(float _x, float _y) {
+	_y = sdl_height - _y;
 	vec3 _t(_x - sdl_width*0.5, _y - sdl_height*0.5, 0);
 	_t -= sdl_trkb_center;
 	var _te = _t.x*_t.x + _t.y*_t.y;
 	var _tem = sdl_trkb_radius_sqr*0.5;
 	if (_te <= _tem) {
-		return vec3(_t.x, _t.y, sqrtf(sdl_trkb_radius_sqr - _te));
+		//should normalize this
+		return normalize(vec3(_t.x, _t.y, sqrt(sdl_trkb_radius_sqr - _te)));
 	}
 	else if (_te > _tem) {
-		return vec3(_t.x, _t.y, _tem / sqrtf(_te));
+		//should normalize this
+		return normalize(vec3(_t.x, _t.y, _tem / sqrt(_te)));
 	}
 	return vec3(0);
 }
@@ -203,30 +279,23 @@ quat SDLGL::get_trackball_quat_sdl(vec3 _s, vec3 _d) {
 	return glm::angleAxis(_temp, _tem);
 }
 
-int SDLGL::Handle_Event_sdl(SDL_Event * _e) {
-	switch (_e->type) {
-	case SDL_QUIT:
-		return SDL_QUIT;
-	case SDL_MOUSEBUTTONDOWN:
-
-	default:
-		break;
-	}
-}
-
 int SDLGL::MouseClickHandler_sdl(SDL_MouseButtonEvent *_e) {
 	if (_e->button == SDL_BUTTON_LEFT) {
 		if (_e->type == SDL_MOUSEBUTTONDOWN) {
 			sdl_trkb_start = get_trackball_pos_sdl(_e->x, _e->y);
 		}
 		else if (_e->type = SDL_MOUSEBUTTONUP) {
-			sdl_trkb_start = vec3(0);
+			sdl_trkb_matnow = sdl_trkb_mat*sdl_trkb_matnow;
+			sdl_trkb_mat = mat4(1);
 		}
 	}
 	return 0;
 }
 
-int SDLGL::MouseMoveHandler_sdl(SDL_MouseMotionEvent *) {
+int SDLGL::MouseMoveHandler_sdl(SDL_MouseMotionEvent *_e) {
+	var _t = get_trackball_pos_sdl(_e->x, _e->y);
+	var _te = get_trackball_quat_sdl(sdl_trkb_start, _t);
+	sdl_trkb_mat = toMat4(_te);
 	return 0;
 }
 
