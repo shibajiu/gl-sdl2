@@ -171,14 +171,19 @@ GLuint SDLGL::LoadShader_sdl_s(const char * _vpath, const char * _fpath) {
 }
 
 void SDLGL::LoadShader_sdl(const char * _vpath, const char * _fpath) {
-	
+
 }
 
-mat4 SDLGL::GetRotateMat() {
+mat4 SDLGL::GetRotateMat_sdl() {
 	if (sdl_ispressed)
 		return sdl_trkb_mat*sdl_trkb_matnow;
 	else
 		return sdl_trkb_matnow;
+}
+
+vec3 SDLGL::GetHandPos_sdl() {
+
+	return sdl_trkb_destination;
 }
 
 int SDLGL::ProcessEvent_sdl() {
@@ -190,12 +195,13 @@ int SDLGL::ProcessEvent_sdl() {
 			sdl_ispressed = true;
 			break;
 		case SDL_MOUSEBUTTONUP:
-				//cout << "r" << endl;
+			//cout << "r" << endl;
 			MouseClickHandler_sdl(&sdl_event.button);
 			sdl_ispressed = false;
 			break;
 		case SDL_MOUSEMOTION:
 			//cout << sdl_event.motion.x << "\t" << sdl_event.motion.y+ << endl;
+			sdl_trkb_destination = get_trackball_pos_sdl(sdl_event.motion.x, sdl_event.motion.y);
 			if (sdl_ispressed)
 				MouseMoveHandler_sdl(&sdl_event.motion);
 			break;
@@ -213,11 +219,11 @@ int SDLGL::RenderTestGenerator_sdl() {
 	GLfloat _t[] = { 0.0, 0.5,0.0, 1.0,0.0,0.3,
 					-0.5,-0.5,0.5,0.3,0.7,0.1,
 					0.5,-0.5,0.5, 0.4,0.1,0.9,
-					0.0,-0.5,-0.5,0.0,0.1,0.3};
-	GLushort _ti[] = {	0,1,2,
+					0.0,-0.5,-0.5,0.0,0.1,0.3 };
+	GLushort _ti[] = { 0,1,2,
 						0,3,1,
 						0,2,3,
-						1,3,2};
+						1,3,2 };
 	GLuint _vao, _vbo, _ebo;
 	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_vbo);
@@ -225,10 +231,10 @@ int SDLGL::RenderTestGenerator_sdl() {
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_t), _t, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, false, 6*sizeof(GLfloat), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), nullptr);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-	glEnableVertexArrayAttrib(_vao, 1);//ogl 4.5
+	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_ti), _ti, GL_STATIC_DRAW);
 	glBindVertexArray(0);

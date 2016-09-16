@@ -47,7 +47,8 @@ public:
 	static GLuint LoadShader_sdl_s(const char* _vpath, const char* _fpath);
 	static GLuint LoadShader_sdl_s(const char* _vpath,const char* _gpath, const char* _fpath);
 	void LoadShader_sdl(const char* _vpath, const char* _fpath);
-	mat4 GetRotateMat();
+	mat4 GetRotateMat_sdl();
+	vec3 GetHandPos_sdl();
 	//handle sdl event
 	virtual int ProcessEvent_sdl();
 	//sample render test,generator must be called before game loop
