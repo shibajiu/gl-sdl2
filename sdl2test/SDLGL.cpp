@@ -181,6 +181,23 @@ mat4 SDLGL::GetRotateMat_sdl() {
 		return sdl_trkb_matnow;
 }
 
+mat4 SDLGL::GetRotateMat_sdl(vec3 _o) {
+	sdl_trkb_start = vec3(1, 0, 0);
+	vec3 _t = vec3(_o.x, _o.y, _o.z);
+	if (_t != vec3(0)) {
+		sdl_trkb_matnow = toMat4(get_trackball_quat_sdl(sdl_trkb_start, _t));
+		return sdl_trkb_mat*sdl_trkb_matnow;
+	}
+	else {
+		/*if (sdl_isfirstlosthand) {
+			sdl_trkb_matnow = sdl_trkb_mat*sdl_trkb_matnow;
+			sdl_trkb_mat = mat4(1);
+			sdl_isfirstlosthand = false;
+		}*/
+		return sdl_trkb_matnow;
+	}
+}
+
 vec3 SDLGL::GetHandPos_sdl() {
 
 	return sdl_trkb_destination;

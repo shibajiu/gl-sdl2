@@ -48,6 +48,8 @@ public:
 	static GLuint LoadShader_sdl_s(const char* _vpath,const char* _gpath, const char* _fpath);
 	void LoadShader_sdl(const char* _vpath, const char* _fpath);
 	mat4 GetRotateMat_sdl();
+	//This func is only for test
+	mat4 GetRotateMat_sdl(vec3 _o);
 	vec3 GetHandPos_sdl();
 	//handle sdl event
 	virtual int ProcessEvent_sdl();
@@ -63,17 +65,20 @@ protected:
 	Uint32 sdl_init_flags;
 	int sdl_height, sdl_width;
 	SDL_Event sdl_event;
-	bool sdl_ispressed;
+	bool sdl_ispressed, sdl_isfirstlosthand = true;
 	SDL_Window *sdl_window;
 	char* sdl_title;
 	GLuint *sdl_program;
 	vec3 sdl_trkb_center = vec3(0);
-	//square of the trackball's radius
+	//Square of the trackball's radius
 	GLfloat sdl_trkb_radius_sqr;
 	vec3 sdl_trkb_start = vec3(0), sdl_trkb_destination = vec3(0);
-	mat4 sdl_trkb_mat = mat4(1),sdl_trkb_matnow=mat4(1);
+	//Basic rotation matrix
+	mat4 sdl_trkb_mat = mat4(1);
+	//Working rotation matrix
+	mat4 sdl_trkb_matnow = mat4(1);
 
-	//map mouse to trackball point
+	//Map mouse to trackball point
 	vec3 get_trackball_pos_sdl(float, float);
 
 	quat get_trackball_quat_sdl(vec3 _s, vec3 _d);
