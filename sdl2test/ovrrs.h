@@ -89,6 +89,8 @@ public:
 	int Stop();
 	vec3 GetWristOrientation();
 	vec3* GetJointPoints();
+	void Release();
+	~ovrrs_fh();
 };
 
 class ovrHandAlertHandler :public PXCHandConfiguration::AlertHandler {
@@ -110,9 +112,9 @@ private:
 
 public:
 	HandsModel(PXCHandData*);
-
+	~HandsModel();
 	void updateskeletonTree();
 	vec3 PXCPoint3DF32_to_vec3(PXCPoint3DF32 _p) const;
 	vec3* GetPoint();
-
+	void Release();
 };

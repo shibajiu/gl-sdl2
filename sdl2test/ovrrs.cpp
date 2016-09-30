@@ -209,10 +209,22 @@ vec3* ovrrs_fh::GetJointPoints() {
 	return handsmodel->GetPoint();
 }
 
+void ovrrs_fh::Release() {
+	delete handsmodel;
+}
+
+ovrrs_fh::~ovrrs_fh() {
+	Release();
+}
+
 HandsModel::HandsModel(PXCHandData * _d):handdata(_d) {
 	skeletontree = new Tree<PointData>[MAX_NUMBER_OF_HANDS];
 	/*jointpoints = new vec3[MAX_NUMBER_OF_JOINTS];
 	jointpoints_t = new vec3[MAX_NUMBER_OF_JOINTS];*/
+}
+
+HandsModel::~HandsModel() {
+	Release();
 }
 
 void HandsModel::updateskeletonTree() {
@@ -293,6 +305,11 @@ vec3 HandsModel::PXCPoint3DF32_to_vec3(PXCPoint3DF32 _p)const {
 
 vec3* HandsModel::GetPoint() {
 	return jointpoints_t;
+}
+
+void HandsModel::Release() {
+	delete[] jointpoints_t;
+	delete[] skeletontree;
 }
 
 
