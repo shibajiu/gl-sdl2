@@ -167,8 +167,8 @@ void ovrrs_fh::init() {
 		var _t = PXCPoint3DF32_to_vec3(_pos) - PXCPoint3DF32_to_vec3(_pos1);
 		//Use this as hand's orientation
 		orientation = _t;
-		orientation.x *= -1;
-		cout << orientation.x << "/" << orientation.y << "/" << orientation.z << "/" << endl;
+		//orientation.x *= -1;
+		//cout << orientation.x << "/" << orientation.y << "/" << orientation.z << "/" << endl;
 
 		}
 		sm->ReleaseFrame();

@@ -149,6 +149,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="KalmanFilter.h" />
     <ClInclude Include="ovrrs.h" />
     <ClInclude Include="SDLGL.h" />
     <ClInclude Include="stdafx.h" />

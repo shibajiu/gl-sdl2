@@ -1,6 +1,6 @@
 // sdl2test.cpp : Defines the entry point for the console application.
 //
-
+//gllinewidth
 #include "stdafx.h"
 void s(ovrrs_tc *_r) {
 	_r->Start();
@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
 	//ovrrs_tc *rs=new ovrrs_tc();
 	ovrrs_fh *rsf = new ovrrs_fh();
 	thread rsthrd = thread(s_fh,rsf);
+	var kal = new KalmanFilter<vec3>(vec3(1.f,1.f,1.f),vec3(1.f,1.f,1.f),vec3(1.f,1.f,1.f));
 	//Use this to wait for init a glm*, DANGEROUS!!!!@
 	Sleep(100);
 	SDLGL s(1200, 800);
@@ -46,7 +47,7 @@ int main(int argc, char* argv[]) {
 			break;
 		mat_view = lookAtRH(eyepos, eyepos + eyefront, eyeup);
 		mat_projection = perspectiveRH(radians(60.f), 4.f / 3, 0.1f, 50.f);
-		var _o = rsf->GetWristOrientation();
+		var _o =kal->Process(rsf->GetWristOrientation());
 		mat_model = s.GetRotateMat_sdl(_o);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(program);
@@ -66,8 +67,8 @@ int main(int argc, char* argv[]) {
 		glUniformMatrix4fv(glGetUniformLocation(program, "mat_projection"), 1, false, value_ptr(mat_projection1));
 
 		glBindVertexArray(_a);
-		//p = s.GetHandPos_sdl();
-		/*vec3 _gh = rs->getHandPos();
+		/*p = s.GetHandPos_sdl();
+		vec3 _gh = rs->getHandPos();
 		_gh.y = 1 - _gh.y;
 		var _h = vec3(2) *_gh - vec3(1);
 		_gh -= vec3(0.5, 0.5, 0.5);
