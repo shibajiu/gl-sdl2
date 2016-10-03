@@ -31,6 +31,10 @@ private:
 	glm::vec3 oldpos;
 	glm::vec3 pos;
 	glm::vec3 moved;
+	const ovrrs_tc& operator =(const ovrrs_tc& o) = delete;
+	ovrrs_tc(const ovrrs_tc&) = delete;
+	const ovrrs_tc& operator =(const ovrrs_tc&& o) = delete;
+	ovrrs_tc(const ovrrs_tc&&) = delete;
 
 	bool isStop;
 	ovrAttp alert;
@@ -79,6 +83,11 @@ private:
 	vec3 orientation;
 	bool isStop;
 	HandsModel* handsmodel;
+
+	const ovrrs_fh& operator =(const ovrrs_fh& o) = delete;
+	ovrrs_fh(const ovrrs_fh&) = delete;
+	const ovrrs_fh& operator =(const ovrrs_fh&& o) = delete;
+	ovrrs_fh(const ovrrs_fh&&) = delete;
 	
 	void init();
 	vec3 PXCPoint3DF32_to_vec3(PXCPoint3DF32 _p) const;
